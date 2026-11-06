@@ -1,14 +1,13 @@
 import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
 import {
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
+  useWindowDimensions,
   type StyleProp,
   type TextInputProps,
   type TextStyle,
@@ -16,6 +15,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useKeyboardHeight } from '@/lib/keyboard';
 import { fonts, useTheme } from '@/lib/theme';
 
 /* ---------- text ---------- */
@@ -158,21 +158,32 @@ export function Sheet({
 }: { visible: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
+  const { height: windowH } = useWindowDimensions();
+  const kb = useKeyboardHeight();
+  // The sheet sits above the keyboard and never grows taller than the space that is left,
+  // so its content scrolls inside it instead of hiding behind the keyboard.
+  const maxH = Math.max(240, windowH - kb - insets.top - 12);
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, justifyContent: 'flex-end' }}>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent navigationBarTranslucent>
+      <View style={{ flex: 1, justifyContent: 'flex-end', paddingBottom: kb }}>
         <Pressable accessibilityLabel="Close" style={[StyleSheet.absoluteFill, { backgroundColor: c.scrim }]} onPress={onClose} />
-        <View style={[s.sheet, { backgroundColor: c.surface, paddingBottom: 16 + insets.bottom }]}>
+        <View style={[s.sheet, { backgroundColor: c.surface, maxHeight: maxH, paddingBottom: kb > 0 ? 12 : 16 + insets.bottom }]}>
           <View style={[s.grab, { backgroundColor: c.line }]} />
           <View style={s.sheetHead}>
             <T v="title" style={{ flexShrink: 1 }}>{title.toLowerCase()}</T>
             <Btn kind="link" small label="Cancel" onPress={onClose} />
           </View>
-          <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 14, paddingBottom: 4 }}>
+          <ScrollView
+            style={{ flexShrink: 1 }}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="interactive"
+            showsVerticalScrollIndicator
+            contentContainerStyle={{ gap: 14, paddingBottom: 24 }}
+          >
             {children}
           </ScrollView>
         </View>
-      </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 }
@@ -213,7 +224,7 @@ const s = StyleSheet.create({
   pill: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
   field: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12 },
   card: { borderWidth: 1, borderRadius: 14, padding: 14, gap: 12 },
-  sheet: { borderTopLeftRadius: 22, borderTopRightRadius: 22, paddingHorizontal: 16, paddingTop: 10, maxHeight: '90%' },
+  sheet: { borderTopLeftRadius: 22, borderTopRightRadius: 22, paddingHorizontal: 16, paddingTop: 10 },
   grab: { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 8 },
   sheetHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, gap: 12 },
   toastWrap: { position: 'absolute', left: 16, right: 16, alignItems: 'center' },

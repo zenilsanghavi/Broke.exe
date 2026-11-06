@@ -4,12 +4,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Btn, Field, T } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
+import { useKeyboardHeight } from '@/lib/keyboard';
 import { useTheme } from '@/lib/theme';
 
 export default function Login() {
   const { c } = useTheme();
   const { signIn } = useAuth();
   const insets = useSafeAreaInsets();
+  const kb = useKeyboardHeight();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -27,7 +29,7 @@ export default function Login() {
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: c.bg }}>
       <ScrollView
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ padding: 16, paddingTop: 16 + insets.top, paddingBottom: 24 + insets.bottom, gap: 14, maxWidth: 480, width: '100%', alignSelf: 'center' }}
+        contentContainerStyle={{ padding: 16, paddingTop: 16 + insets.top, paddingBottom: 24 + insets.bottom + kb, gap: 14, maxWidth: 480, width: '100%', alignSelf: 'center' }}
       >
         <Image source={require('../../assets/images/logo.png')} accessibilityLabel="Broke.exe" style={{ width: 160, height: 160, borderRadius: 24, alignSelf: 'center' }} />
         <T v="title" style={{ marginTop: 6 }}>{'> sign in to continue'}</T>

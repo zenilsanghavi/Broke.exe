@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Btn, T } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
+import { useKeyboardHeight } from '@/lib/keyboard';
 import { currentMonth } from '@/lib/money';
 import { useStore } from '@/lib/store';
 import { fonts, useTheme } from '@/lib/theme';
@@ -23,6 +24,7 @@ function Shell() {
   const { session, signOut } = useAuth();
   const { loading, error, reload, buckets } = useStore();
   const insets = useSafeAreaInsets();
+  const kb = useKeyboardHeight();
 
   const [tab, setTab] = useState<Tab>('home');
   const [month, setMonth] = useState(currentMonth());
@@ -62,9 +64,10 @@ function Shell() {
       </View>
 
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 110 + insets.bottom, maxWidth: 520, width: '100%', alignSelf: 'center' }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 110 + insets.bottom + kb, maxWidth: 520, width: '100%', alignSelf: 'center' }}
         refreshControl={<RefreshControl refreshing={loading && !first} onRefresh={reload} tintColor={c.accent} colors={[c.accent]} />}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       >
         {error ? (
           <View style={[s.banner, { backgroundColor: c.badBg }]}>
